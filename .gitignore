@@ -1,2 +1,2 @@
 .venv/
-model_training/final_roberta_model
+model_training/final_roberta_model/*.safetensors
