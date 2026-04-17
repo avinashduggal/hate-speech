@@ -1,2 +1,5 @@
 .venv/
+.DS_Store
 model_training/final_roberta_model/
+model_training/deberta-v3-hs/
+model_testing/tfhub_cache/
