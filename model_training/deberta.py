@@ -7,6 +7,9 @@ from torch.utils.data import Dataset
 
 MODEL_PATH = "microsoft/deberta-v3-base"
 
+"""
+    Custom HateSpeechDataset Class to load in npz data.
+"""
 class HateSpeechDataset(Dataset):
     def __init__(self, npz_path):
         data = np.load(npz_path)
@@ -24,6 +27,8 @@ class HateSpeechDataset(Dataset):
             "labels":         self.labels[idx]
         }
 
+
+# Loads dataset, model, and tokenizer to train DeBERTa model on HateSpeechDataset.
 train_dataset = HateSpeechDataset("../data/train_deberta.npz")
 val_dataset   = HateSpeechDataset("../data/val_deberta.npz")
 
@@ -36,6 +41,9 @@ model = DebertaV2ForSequenceClassification.from_pretrained(
 
 tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
 
+"""
+    Computes the Accuracy and F1-Score.
+"""
 def compute_metrics(eval_pred):
     logits, labels = eval_pred
     preds = np.argmax(logits, axis=-1)
@@ -44,6 +52,9 @@ def compute_metrics(eval_pred):
         "f1": f1_score(labels, preds, average="macro"),
     }
 
+"""
+    Prints the Classification Reports and save Confusion Matrices for the specfied subsets.
+"""
 def print_classification_report(dataset, ds_type):
     predictions = trainer.predict(dataset)
     preds = np.argmax(predictions.predictions, axis=-1)
@@ -59,7 +70,7 @@ def print_classification_report(dataset, ds_type):
 
     print(classification_report(labels, preds, target_names=["non-hate", "hate"]))
 
-
+# Set to train for 3 epochs.
 training_args = TrainingArguments(
     output_dir="./deberta-v3-hs",
     num_train_epochs=3,
@@ -80,6 +91,7 @@ training_args = TrainingArguments(
     report_to="none"
 )
 
+# Set Trainer parameters and train the model.
 trainer = Trainer(
     model=model,
     args=training_args,
@@ -90,9 +102,11 @@ trainer = Trainer(
 
 trainer.train()
 
+# Print classification reports and confusion matrices.
 print_classification_report(train_dataset, "Train")
 print_classification_report(val_dataset, "Val")
 
+# Save the model and tokenizer.
 model.save_pretrained("./deberta-v3-hs-tuned")
 tokenizer.save_pretrained("./deberta-v3-hs-tuned")
 print("DeBERTa Model saved.")
