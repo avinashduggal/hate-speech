@@ -2,7 +2,7 @@ from textattack.attack_recipes import AttackRecipe
 from textattack.search_methods import GreedyWordSwapWIR
 from textattack.constraints.pre_transformation import RepeatModification, StopwordModification
 from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
-from textattack.transformations import CompositeTransformation, WordSwapMaskedLM, WordSwapEmbedding
+from textattack.transformations import CompositeTransformation, WordSwapMaskedLM, WordSwapEmbedding, WordSwapNeighboringCharacterSwap
 from textattack.goal_functions import UntargetedClassification
 from textattack import Attack
 
@@ -11,6 +11,7 @@ from textattack import Attack
     This combines word and semantic-level attacks in one recipe.
     WordSwapMaskedLM generates word replacements using a MLM model based on roberta-base.
     BERT-Attack performs replacement at a token-level with a maximum of 10 candidates tokens to perform replacements based on MLM's confidence.
+    WordSwapNeighboringCharacterSwap replaces words using a neighboring character swap.
     Also performs replacement of words using WordSwapEmbeddings with a maximum of 10 candidate words to replace with synonyms.
     Attack does not change the same candidate token twice and stopwords.
     UniversalSentenceEncoder is to ensure the semantic meaning is preserved while trying to flip the label.
@@ -24,6 +25,7 @@ class DeBERTaAttack(AttackRecipe):
         transformation = CompositeTransformation([
             WordSwapMaskedLM(method="bert-attack", masked_language_model="roberta-base", max_candidates=10),
             WordSwapEmbedding(max_candidates=10),                                                              
+            WordSwapNeighboringCharacterSwap(),                                                              
         ])
 
         constraints = [
