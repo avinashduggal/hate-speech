@@ -8,28 +8,22 @@ from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer, DebertaV2ForSequenceClassification
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report, confusion_matrix
 from textattack.attack_recipes import TextFoolerJin2019, DeepWordBugGao2018, BAEGarg2019
-from textattack import Attack, Attacker, AttackArgs
-from textattack.attack_recipes import AttackRecipe
-from textattack.transformations import CompositeTransformation, WordSwapMaskedLM, WordSwapEmbedding
+from textattack import Attacker, AttackArgs
 
 from textattack.models.wrappers import HuggingFaceModelWrapper
 from textattack.datasets import Dataset as TA_Dataset
 
-from textattack.transformations import WordSwapMaskedLM
-from textattack.search_methods import GreedyWordSwapWIR
-from textattack.constraints.pre_transformation import RepeatModification, StopwordModification
-from textattack.constraints.semantics.sentence_encoders import UniversalSentenceEncoder
-from textattack.goal_functions import UntargetedClassification
 from textattack.attack_results import SuccessfulAttackResult
 
+import sys
 import os
-import tensorflow_hub as hub
 
-# Load TF-hub library locally, due to issues with the pip version.
-os.environ["TFHUB_CACHE_DIR"] = "../tfhub_cache"
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-use_model = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
-print("USE loaded successfully")
+from utils.patch_utils import apply_sentence_encoder_patch
+from utils.deberta_custom_recipe import DeBERTaAttack
+
+apply_sentence_encoder_patch()
 
 """
     Method to prepare attacks. Default number of samples is set to 10% of test subset. (500 samples)
@@ -70,42 +64,6 @@ def prepare_attacks(dataloader, model, tokenizer, device, max_samples=50):
 
     return TA_Dataset(adversarial_data)
 
-"""
-    Hybrid AttackRecipe to train DeBERTa-v3 model.
-    This combines word and semantic-level attacks in one recipe.
-    WordSwapMaskedLM generates word replacements using a MLM model based on roberta-base.
-    BERT-Attack performs replacement at a token-level with a maximum of 10 candidates tokens to perform replacements based on MLM's confidence.
-    Also performs replacement of words using WordSwapEmbeddings with a maximum of 10 candidate words to replace with synonyms.
-    Attack does not change the same candidate token twice and stopwords.
-    UniversalSentenceEncoder is to ensure the semantic meaning is preserved while trying to flip the label.
-    Uses GreedyWordSwapWIR to remove words based on the importance of a word. 
-"""
-class DeBERTaAttack(AttackRecipe):
-    @staticmethod
-    def build(model_wrapper): 
-        goal_function = UntargetedClassification(model_wrapper, query_budget=100)
-
-        transformation = CompositeTransformation([
-            WordSwapMaskedLM(method="bert-attack", masked_language_model="roberta-base", max_candidates=10),
-            WordSwapEmbedding(max_candidates=10),                                                              
-        ])
-
-        constraints = [
-            RepeatModification(),
-            StopwordModification(),
-            UniversalSentenceEncoder(
-                threshold=0.75,
-                metric="cosine",
-                compare_against_original=True,
-                window_size=15
-            )
-        ]
-
-        search_method = GreedyWordSwapWIR(wir_method="delete")
-
-        return Attack(goal_function, constraints, transformation, search_method)    
-
-
 # Custom Dataset Class
 class TestDataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels):
@@ -130,7 +88,7 @@ def main(args):
     # Will the load the relevant model and tokenizer based on the model_name. 
     # If not model_name not specficed or doesn't exist, terminate the script.
     if args.model_name == "roberta":
-        MODEL_PATH = "../model_training/final_roberta_model"
+        MODEL_PATH = "../model_training/final_roberta_model" #Change this to new base roberta model.
 
         print(f"Loading model from {MODEL_PATH}...")
 
@@ -188,7 +146,7 @@ def main(args):
     # Records down attack success rate and saves the results.
     if args.adversarial_attacks:
         attack_args = AttackArgs(
-            log_to_csv=f'attack_results_{args.adversarial_attacks}.csv',
+            log_to_csv=f'./results/attack_results_{args.model_name}_{args.adversarial_attacks}.csv',
             num_examples=50,  
         )
         attack_dataset = prepare_attacks(test_loader, model, tokenizer, DEVICE)
@@ -236,7 +194,7 @@ def main(args):
     print("\nConfusion Matrix:")
     print(cm)
 
-    filename = f"{args.model_name}_final_confusion_matrix.png"
+    filename = f"./results/{args.model_name}_final_confusion_matrix.png"
 
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = ["hate", "non-hate"])
     disp.plot()
