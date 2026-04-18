@@ -10,7 +10,7 @@ from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classificati
 from textattack.attack_recipes import TextFoolerJin2019, DeepWordBugGao2018, BAEGarg2019
 from textattack import Attack, Attacker, AttackArgs
 from textattack.attack_recipes import AttackRecipe
-from textattack.transformations import CompositeTransformation, WordSwapMaskedLM, WordSwapGradientBased, WordSwapEmbedding
+from textattack.transformations import CompositeTransformation, WordSwapMaskedLM, WordSwapEmbedding
 
 from textattack.models.wrappers import HuggingFaceModelWrapper
 from textattack.datasets import Dataset as TA_Dataset
@@ -25,17 +25,17 @@ from textattack.attack_results import SuccessfulAttackResult
 import os
 import tensorflow_hub as hub
 
-import logging
-import tensorflow as tf
+# Load TF-hub library locally, due to issues with the pip version.
+os.environ["TFHUB_CACHE_DIR"] = "../tfhub_cache"
 
-
-# Set a clean cache directory
-os.environ["TFHUB_CACHE_DIR"] = "./tfhub_cache"
-
-# Pre-download USE before running the attack
 use_model = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 print("USE loaded successfully")
 
+"""
+    Method to prepare attacks. Default number of samples is set to 10% of test subset. (500 samples)
+    Decodes the tokenized input to apply the adversarial attack on the target input.
+    Returns the attacked test subset.
+"""
 def prepare_attacks(dataloader, model, tokenizer, device, max_samples=50):
     model.eval()
     adversarial_data = []
@@ -70,25 +70,40 @@ def prepare_attacks(dataloader, model, tokenizer, device, max_samples=50):
 
     return TA_Dataset(adversarial_data)
 
+"""
+    Hybrid AttackRecipe to train DeBERTa-v3 model.
+    This combines word and semantic-level attacks in one recipe.
+    WordSwapMaskedLM generates word replacements using a MLM model based on roberta-base.
+    BERT-Attack performs replacement at a token-level with a maximum of 10 candidates tokens to perform replacements based on MLM's confidence.
+    Also performs replacement of words using WordSwapEmbeddings with a maximum of 10 candidate words to replace with synonyms.
+    Attack does not change the same candidate token twice and stopwords.
+    UniversalSentenceEncoder is to ensure the semantic meaning is preserved while trying to flip the label.
+    Uses GreedyWordSwapWIR to remove words based on the importance of a word. 
+"""
 class DeBERTaAttack(AttackRecipe):
     @staticmethod
     def build(model_wrapper): 
-        goal_function = UntargetedClassification(model_wrapper)
+        goal_function = UntargetedClassification(model_wrapper, query_budget=100)
 
         transformation = CompositeTransformation([
-            WordSwapMaskedLM(method="bert-attack", masked_language_model="roberta-base", max_candidates=15),
+            WordSwapMaskedLM(method="bert-attack", masked_language_model="roberta-base", max_candidates=10),
             WordSwapEmbedding(max_candidates=10),                                                              
         ])
 
         constraints = [
             RepeatModification(),
             StopwordModification(),
-            UniversalSentenceEncoder(threshold=0.7)
+            UniversalSentenceEncoder(
+                threshold=0.75,
+                metric="cosine",
+                compare_against_original=True,
+                window_size=15
+            )
         ]
 
         search_method = GreedyWordSwapWIR(wir_method="delete")
 
-        return Attack(goal_function, constraints, transformation, search_method)      
+        return Attack(goal_function, constraints, transformation, search_method)    
 
 
 # Custom Dataset Class
@@ -107,25 +122,13 @@ class TestDataset(torch.utils.data.Dataset):
 
 def main(args):
 
-    models = {
-        "roberta_base" : "../model_training/final_roberta_model",
-        "deberta_base" : "../model_training/deberta-v3-hs-tuned",
-        "deberta_adv" : "../model_training/deberta-v3-adversarial-final"
-    }
-
-    recipes = {
-        "character" : DeepWordBugGao2018,
-        "word": TextFoolerJin2019,
-        "semantic": BAEGarg2019,
-        "hybrid": DeBERTaAttack
-    }
-
-    # 1. Configuration
-    TEST_DATA_PATH = "../data/test.csv" # Path to your small test file
+    # Set test subset and device.
+    TEST_DATA_PATH = "../data/test.csv" 
     DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
-    # 2. Load Model and Tokenizer
-    # Would to need to refactor to test all models against all recipes.
+    # Load Model and Tokenizer based on the model name specficed.
+    # Will the load the relevant model and tokenizer based on the model_name. 
+    # If not model_name not specficed or doesn't exist, terminate the script.
     if args.model_name == "roberta":
         MODEL_PATH = "../model_training/final_roberta_model"
 
@@ -139,7 +142,6 @@ def main(args):
         else:
             MODEL_PATH = "../model_training/deberta-v3-hs-tuned"
         
-        
         print(f"Loading model from {MODEL_PATH}...")
 
         tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base", use_fast=False)
@@ -151,9 +153,8 @@ def main(args):
     model.to(DEVICE)
     model.eval()
 
-    # 3. Load and Prepare Test Data
+    # Load and Prepare Test Data
     df = pd.read_csv(TEST_DATA_PATH)
-    # Ensure columns match your training script names
     texts = df['Content'].tolist()
     labels = df['Label'].tolist()
 
@@ -166,7 +167,7 @@ def main(args):
         return_tensors='pt'
     )
 
-    #Once all attacks work, then we optimize it to make sure it runs through all tests at once.
+    # If an relevant attack is specficed, then build and apply the attack in the test subset.
     if args.adversarial_attacks:
         model_wrapper = HuggingFaceModelWrapper(model, tokenizer)
         if args.adversarial_attacks == "character":
@@ -183,10 +184,12 @@ def main(args):
 
     test_loader = DataLoader(TestDataset(encodings, labels), batch_size=8)
 
+    # Prepare and run through the attacks against the model. 
+    # Records down attack success rate and saves the results.
     if args.adversarial_attacks:
         attack_args = AttackArgs(
             log_to_csv=f'attack_results_{args.adversarial_attacks}.csv',
-            num_examples=10,  
+            num_examples=50,  
         )
         attack_dataset = prepare_attacks(test_loader, model, tokenizer, DEVICE)
         attacker = Attacker(attack, attack_dataset, attack_args)
@@ -203,45 +206,45 @@ def main(args):
         asr = (successful_attacks / total_attempts) * 100 if total_attempts > 0 else 0
         print(f"Attack Success Rate: {asr:.2f}%")    
 
-    # # 4. Evaluation Loop
-    # all_preds = []
-    # all_labels = []
+    # Evaluation Loop
+    all_preds = []
+    all_labels = []
 
-    # print("Running evaluation...")
-    # with torch.no_grad():
-    #     for batch in test_loader:
-    #         input_ids = batch['input_ids'].to(DEVICE)
-    #         attention_mask = batch['attention_mask'].to(DEVICE)
-    #         targets = batch['labels'].to(DEVICE)
+    print("Running evaluation...")
+    with torch.no_grad():
+        for batch in test_loader:
+            input_ids = batch['input_ids'].to(DEVICE)
+            attention_mask = batch['attention_mask'].to(DEVICE)
+            targets = batch['labels'].to(DEVICE)
             
-    #         outputs = model(input_ids, attention_mask=attention_mask)
-    #         preds = torch.argmax(outputs.logits, dim=1)
+            outputs = model(input_ids, attention_mask=attention_mask)
+            preds = torch.argmax(outputs.logits, dim=1)
             
-    #         all_preds.extend(preds.cpu().numpy())
-    #         all_labels.extend(targets.cpu().numpy())
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(targets.cpu().numpy())
 
-    # # 5. Report Results
-    # print("\n" + "="*30)
-    # print("TEST PERFORMANCE REPORT")
-    # print("="*30)
-    # print(f"Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
-    # print("\nClassification Report:")
-    # print(classification_report(all_labels, all_preds))
+    # Prints classification report and confusion matrix, which saves as an img file.
+    print("\n" + "="*30)
+    print("TEST PERFORMANCE REPORT")
+    print("="*30)
+    print(f"Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
+    print("\nClassification Report:")
+    print(classification_report(all_labels, all_preds))
 
-    # cm = confusion_matrix(all_labels, all_preds)
+    cm = confusion_matrix(all_labels, all_preds)
 
-    # print("\nConfusion Matrix:")
-    # print(cm)
+    print("\nConfusion Matrix:")
+    print(cm)
 
-    # filename = f"{args.model_name}_final_confusion_matrix.png"
+    filename = f"{args.model_name}_final_confusion_matrix.png"
 
-    # disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = ["hate", "non-hate"])
-    # disp.plot()
-    # disp.ax_.set_title(f"{args.model_name.capitalize()} - Final Confusion Matrix")
-    # disp.figure_.savefig(filename, bbox_inches='tight')
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = ["hate", "non-hate"])
+    disp.plot()
+    disp.ax_.set_title(f"{args.model_name.capitalize()} - Final Confusion Matrix")
+    disp.figure_.savefig(filename, bbox_inches='tight')
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='DeBERTa Hate Speech Classifer')
+    parser = argparse.ArgumentParser(description='Hate Speech Classifer')
     parser.add_argument('--model_name', default=None)
     parser.add_argument('--adversarial_attacks', default=None)
 
