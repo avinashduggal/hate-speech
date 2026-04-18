@@ -4,25 +4,20 @@ from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
-# 1. Configuration
 MODEL_PATH = "../model_training/final_roberta_model"
-TEST_DATA_PATH = "../data/test.csv" # Path to your small test file
+TEST_DATA_PATH = "../data/test.csv" 
 DEVICE = "mps" if torch.backends.mps.is_available() else "cpu"
 
-# 2. Load Model and Tokenizer
 print(f"Loading model from {MODEL_PATH}...")
 tokenizer = RobertaTokenizer.from_pretrained(MODEL_PATH)
 model = RobertaForSequenceClassification.from_pretrained(MODEL_PATH)
 model.to(DEVICE)
 model.eval()
 
-# 3. Load and Prepare Test Data
 df = pd.read_csv(TEST_DATA_PATH)
-# Ensure columns match your training script names
 texts = df['Content'].tolist()
 labels = df['Label'].tolist()
 
-# Tokenization
 encodings = tokenizer(
     texts, 
     padding=True, 
@@ -47,7 +42,6 @@ class TestDataset(torch.utils.data.Dataset):
 
 test_loader = DataLoader(TestDataset(encodings, labels), batch_size=8)
 
-# 4. Evaluation Loop
 all_preds = []
 all_labels = []
 
@@ -64,7 +58,6 @@ with torch.no_grad():
         all_preds.extend(preds.cpu().numpy())
         all_labels.extend(targets.cpu().numpy())
 
-# 5. Report Results
 print("\n" + "="*30)
 print("TEST PERFORMANCE REPORT")
 print("="*30)

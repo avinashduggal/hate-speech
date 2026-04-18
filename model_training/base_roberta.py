@@ -19,18 +19,13 @@ train_texts, val_texts, train_labels, val_labels = train_test_split(
 tokenizer = RobertaTokenizer.from_pretrained('roberta-base')
 
 def tokenize_data(texts, labels):
-    encodings = tokenizer(
-        texts, 
-        padding=True, 
-        truncation=True, 
-        max_length=512,
-        return_tensors='pt'
-    )
+    encodings = tokenizer(texts, padding=True, truncation=True, max_length=512, return_tensors='pt')
     return encodings, torch.tensor(labels)
 
 train_encodings, train_y = tokenize_data(train_texts, train_labels)
 val_encodings, val_y = tokenize_data(val_texts, val_labels)
 
+# Modify data for use in the training loop
 class ParagraphDataset(torch.utils.data.Dataset):
     def __init__(self, encodings, labels):
         self.encodings = encodings
@@ -44,29 +39,34 @@ class ParagraphDataset(torch.utils.data.Dataset):
     def __len__(self):
         return len(self.labels)
 
-train_dataset = ParagraphDataset(train_encodings, train_y)
-val_dataset = ParagraphDataset(val_encodings, val_y)
 
-device = "mps"
-model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=2)
-model.to(device)
+train_loader = DataLoader(ParagraphDataset(train_encodings, train_y), batch_size=16, shuffle=True)
+val_loader = DataLoader(ParagraphDataset(val_encodings, val_y), batch_size=16)
 
-train_loader = DataLoader(train_dataset, batch_size=16, shuffle=True)
-optim = AdamW(model.parameters(), lr=2e-5)
+device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
+model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=2).to(device)
 
-# Freeze the entire RoBERTa base model initially
-for param in model.roberta.parameters():
+
+# Freeze all -> then unfreeze last 2 layers
+for param in model.parameters():
     param.requires_grad = False
-
-# Unfreeze the last 2 layers and the classifier head
-for i in range(10, 12): # Layers 10 and 11
+for i in range(8, 12):
     for param in model.roberta.encoder.layer[i].parameters():
         param.requires_grad = True
+for param in model.classifier.parameters():
+    param.requires_grad = True
 
+optim = AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=2e-5)
 
+# Training
 model.train()
-for epoch in range(3): 
+# 3 Epochs to train over
+for epoch in range(3):
+    total_loss = 0
+    # Batch of 16
+    batch_counter = 0
     for batch in train_loader:
+        batch_counter += 1
         optim.zero_grad()
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
@@ -74,29 +74,31 @@ for epoch in range(3):
         
         outputs = model(input_ids, attention_mask=attention_mask, labels=labels)
         loss = outputs.loss
+        
+        # Backpropagation
         loss.backward()
         optim.step()
-    print(f"Epoch {epoch+1} complete. Loss: {loss.item():.4f}")
+        # Keep track of loss so we can see progress of training
+        total_loss += loss.item()
+        print(f"Batch {batch_counter} | Epoch {epoch} complete.")
+    print(f"Epoch {epoch+1} | Avg Loss: {total_loss/len(train_loader):.4f}")
 
 
-save_path = "./final_roberta_model"
-
-print(f"Saving final model to {save_path}...")
-model.save_pretrained(save_path)
-tokenizer.save_pretrained(save_path)
-
+# Evaluation
 model.eval()
-val_loader = DataLoader(val_dataset, batch_size=8)
 predictions = []
-
 with torch.no_grad():
     for batch in val_loader:
         input_ids = batch['input_ids'].to(device)
         attention_mask = batch['attention_mask'].to(device)
-        
         outputs = model(input_ids, attention_mask=attention_mask)
         preds = torch.argmax(outputs.logits, dim=1)
         predictions.extend(preds.cpu().numpy())
 
 print("\nFinal Results:")
 print(classification_report(val_labels, predictions))
+
+
+# Save the model
+model.save_pretrained("./base_roberta")
+tokenizer.save_pretrained("./base_roberta")
