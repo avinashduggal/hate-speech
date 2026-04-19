@@ -102,11 +102,11 @@ trainer = Trainer(
 
 trainer.train()
 
-# Print classification reports and confusion matrices.
-print_classification_report(train_dataset, "Train")
-print_classification_report(val_dataset, "Val")
-
 # Save the model and tokenizer.
 model.save_pretrained("./deberta-v3-hs-tuned")
 tokenizer.save_pretrained("./deberta-v3-hs-tuned")
 print("DeBERTa Model saved.")
+
+# Print classification reports and confusion matrices.
+print_classification_report(train_dataset, "Train")
+print_classification_report(val_dataset, "Val")

@@ -69,7 +69,7 @@ Hybrid:
 | Original accuracy:            | 100.0% |
 | Accuracy under attack:        | 36.0%  |
 | Attack success rate:          | 64.0%  |
-| Average perturbed word %:     | 13.27% |
+| Average perturbed word %:     | 12.97% |
 | Average num. words per input: | 26.76  |
-| Avg num queries:              | 57.48  |
+| Avg num queries:              | 58.0   |
 +-------------------------------+--------+

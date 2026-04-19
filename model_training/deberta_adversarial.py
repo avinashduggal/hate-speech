@@ -56,11 +56,11 @@ val_dataset   = TADataset(val_data)
 def compute_metrics(model_wrapper, dataset):
     preds = []
     labels = []
-    
-    for text_input, label in dataset:
-        output = model_wrapper(text_input['text'])
-        preds.append(np.argmax(output))
-        labels.append(label)
+    with torch.no_grad():   
+        for text_input, label in dataset:
+            output = model_wrapper(text_input['text'])
+            preds.append(np.argmax(output))
+            labels.append(label)
         
     return preds, labels
 
@@ -68,8 +68,10 @@ def compute_metrics(model_wrapper, dataset):
     Prints the Classification Reports and save Confusion Matrices for the specfied subsets.
 """
 def print_classification_report(model_wrapper, dataset, ds_type):
+    print(f"Computing metrics for {ds_type} set.")
     preds, labels = compute_metrics(model_wrapper, dataset)
 
+    print(f"Generating Confusion Matrix for {ds_type} set.")
     filename = f"./results/deberta_adv_{ds_type.lower()}_confusion_matrix.png"
     cm = confusion_matrix(labels, preds)
 
@@ -78,7 +80,9 @@ def print_classification_report(model_wrapper, dataset, ds_type):
     disp.ax_.set_title(f"DeBERTa {ds_type} - Confusion Matrix")
     disp.figure_.savefig(filename, bbox_inches='tight')
 
+    print(f"Loading Classification Report for {ds_type} set.")
     print(classification_report(labels, preds, target_names=["non-hate", "hate"]))
+    print(f"Finished printing classification report and confusion matrix for {ds_type}!")
 
 """
     Computes ASR with specified number of samples.
@@ -137,6 +141,13 @@ trainer = TATrainer(
 
 trainer.train()
 
+# Save the model and tokenizer once finished.
+model.save_pretrained("./deberta-v3-adversarial-final")
+tokenizer.save_pretrained("./deberta-v3-adversarial-final")
+print("Adversarial DeBERTa Model saved.")
+
+model.eval()
+
 # Computes ASR
 compute_ASR(attack, train_dataset, "Train", 10)
 compute_ASR(attack, val_dataset, "Val", 5)
@@ -144,8 +155,3 @@ compute_ASR(attack, val_dataset, "Val", 5)
 # Print classification reports and confusion matrices.
 print_classification_report(wrapped_model, train_dataset, "Train")
 print_classification_report(wrapped_model, val_dataset, "Val")
-
-# Save the model and tokenizer once finished.
-model.save_pretrained("./deberta-v3-adversarial-final")
-tokenizer.save_pretrained("./deberta-v3-adversarial-final")
-print("Adversarial DeBERTa Model saved.")
