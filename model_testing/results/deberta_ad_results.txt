@@ -1,0 +1,74 @@
+==============================
+TEST PERFORMANCE REPORT
+==============================
+Accuracy: 0.8820
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.85      0.92      0.89       250
+           1       0.92      0.84      0.88       250
+
+    accuracy                           0.88       500
+   macro avg       0.88      0.88      0.88       500
+weighted avg       0.88      0.88      0.88       500
+
+Character:
++-------------------------------+--------+
+| Attack Results                |        |
++-------------------------------+--------+
+| Number of successful attacks: | 46     |
+| Number of failed attacks:     | 4      |
+| Number of skipped attacks:    | 0      |
+| Original accuracy:            | 100.0% |
+| Accuracy under attack:        | 8.0%   |
+| Attack success rate:          | 92.0%  |
+| Average perturbed word %:     | 23.33% |
+| Average num. words per input: | 28.28  |
+| Avg num queries:              | 41.26  |
++-------------------------------+--------+
+
+Word:
++-------------------------------+--------+
+| Attack Results                |        |
++-------------------------------+--------+
+| Number of successful attacks: | 42     |
+| Number of failed attacks:     | 8      |
+| Number of skipped attacks:    | 0      |
+| Original accuracy:            | 100.0% |
+| Accuracy under attack:        | 16.0%  |
+| Attack success rate:          | 84.0%  |
+| Average perturbed word %:     | 15.64% |
+| Average num. words per input: | 28.28  |
+| Avg num queries:              | 120.06 |
++-------------------------------+--------+
+
+Semantic:
++-------------------------------+--------+
+| Attack Results                |        |
++-------------------------------+--------+
+| Number of successful attacks: | 14     |
+| Number of failed attacks:     | 36     |
+| Number of skipped attacks:    | 0      |
+| Original accuracy:            | 100.0% |
+| Accuracy under attack:        | 72.0%  |
+| Attack success rate:          | 28.0%  |
+| Average perturbed word %:     | 6.51%  |
+| Average num. words per input: | 28.28  |
+| Avg num queries:              | 50.2   |
++-------------------------------+--------+
+
+Hybrid:
++-------------------------------+--------+
+| Attack Results                |        |
++-------------------------------+--------+
+| Number of successful attacks: | 32     |
+| Number of failed attacks:     | 18     |
+| Number of skipped attacks:    | 0      |
+| Original accuracy:            | 100.0% |
+| Accuracy under attack:        | 36.0%  |
+| Attack success rate:          | 64.0%  |
+| Average perturbed word %:     | 14.79% |
+| Average num. words per input: | 28.28  |
+| Avg num queries:              | 58.72  |
++-------------------------------+--------+

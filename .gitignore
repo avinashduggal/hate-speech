@@ -1,2 +1,7 @@
 .venv/
+.DS_Store
 model_training/final_roberta_model/
+model_training/deberta-v3-hs/
+model_training/deberta-v3-adversarial/
+**/tfhub_cache/
+**/__pycache__/
