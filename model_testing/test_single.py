@@ -1,6 +1,9 @@
 import torch
 from transformers import RobertaTokenizer, RobertaForSequenceClassification
 
+
+
+#This file allows for custom input and uses both models to give their predictions
 device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model_path = "../model_training/base_roberta"
 
@@ -9,7 +12,7 @@ model = RobertaForSequenceClassification.from_pretrained(model_path).to(device)
 model.eval()
 
 
-model_path_2 = "../model_training/adverse_roberta"
+model_path_2 = "../model_training/adverse_roberta_dynamic_2"
 
 tokenizer_2 = RobertaTokenizer.from_pretrained(model_path_2)
 model_2 = RobertaForSequenceClassification.from_pretrained(model_path_2).to(device)

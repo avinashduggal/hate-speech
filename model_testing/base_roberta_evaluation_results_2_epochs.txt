@@ -1,0 +1,78 @@
+ROBERTA EVALUATION REPORT
+==============================
+
+TEST DATASET: ../data/test.csv
+Accuracy: 0.8200
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.78      0.89      0.83       250
+           1       0.87      0.75      0.81       250
+
+    accuracy                           0.82       500
+   macro avg       0.83      0.82      0.82       500
+weighted avg       0.83      0.82      0.82       500
+
+
+Confusion Matrix:
+[[222  28]
+ [ 62 188]]
+------------------------------
+
+TEST DATASET: ../data/test_semantic.csv
+Accuracy: 0.8300
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.80      0.89      0.84       250
+           1       0.87      0.77      0.82       250
+
+    accuracy                           0.83       500
+   macro avg       0.83      0.83      0.83       500
+weighted avg       0.83      0.83      0.83       500
+
+
+Confusion Matrix:
+[[222  28]
+ [ 57 193]]
+------------------------------
+
+TEST DATASET: ../data/test_leetspeak.csv
+Accuracy: 0.8060
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.76      0.89      0.82       250
+           1       0.87      0.72      0.79       250
+
+    accuracy                           0.81       500
+   macro avg       0.81      0.81      0.80       500
+weighted avg       0.81      0.81      0.80       500
+
+
+Confusion Matrix:
+[[222  28]
+ [ 69 181]]
+------------------------------
+
+TEST DATASET: ../data/test_typo.csv
+Accuracy: 0.8280
+
+Classification Report:
+              precision    recall  f1-score   support
+
+           0       0.79      0.89      0.84       250
+           1       0.87      0.77      0.82       250
+
+    accuracy                           0.83       500
+   macro avg       0.83      0.83      0.83       500
+weighted avg       0.83      0.83      0.83       500
+
+
+Confusion Matrix:
+[[222  28]
+ [ 58 192]]
+------------------------------

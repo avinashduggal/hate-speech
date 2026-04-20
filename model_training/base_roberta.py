@@ -47,7 +47,7 @@ device = torch.device("mps" if torch.backends.mps.is_available() else "cpu")
 model = RobertaForSequenceClassification.from_pretrained('roberta-base', num_labels=2).to(device)
 
 
-# Freeze all -> then unfreeze last 2 layers
+# Freeze all -> then unfreeze last 4 layers
 for param in model.parameters():
     param.requires_grad = False
 for i in range(8, 12):
