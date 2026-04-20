@@ -1,36 +1,36 @@
 Train:
               precision    recall  f1-score   support
 
-    non-hate       0.99      1.00      1.00      4500
-        hate       1.00      0.99      1.00      4500
+    non-hate       0.99      1.00      0.99      4500
+        hate       1.00      0.99      0.99      4500
 
-    accuracy                           1.00      9000
-   macro avg       1.00      1.00      1.00      9000
-weighted avg       1.00      1.00      1.00      9000
+    accuracy                           0.99      9000
+   macro avg       0.99      0.99      0.99      9000
+weighted avg       0.99      0.99      0.99      9000
 
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 3      |
-| Number of failed attacks:     | 7      |
+| Number of successful attacks: | 5      |
+| Number of failed attacks:     | 5      |
 | Number of skipped attacks:    | 0      |
 | Original accuracy:            | 100.0% |
-| Accuracy under attack:        | 70.0%  |
-| Attack success rate:          | 30.0%  |
-| Average perturbed word %:     | 18.19% |
+| Accuracy under attack:        | 50.0%  |
+| Attack success rate:          | 50.0%  |
+| Average perturbed word %:     | 20.49% |
 | Average num. words per input: | 29.6   |
-| Avg num queries:              | 82.9   |
+| Avg num queries:              | 77.3   |
 +-------------------------------+--------+
 
 Val:
               precision    recall  f1-score   support
 
-    non-hate       0.87      0.86      0.86       250
-        hate       0.86      0.87      0.86       250
+    non-hate       0.85      0.91      0.88       250
+        hate       0.90      0.84      0.87       250
 
-    accuracy                           0.86       500
-   macro avg       0.86      0.86      0.86       500
-weighted avg       0.86      0.86      0.86       500
+    accuracy                           0.87       500
+   macro avg       0.88      0.87      0.87       500
+weighted avg       0.88      0.87      0.87       500
 
 +-------------------------------+--------+
 | Attack Results                |        |
@@ -41,7 +41,7 @@ weighted avg       0.86      0.86      0.86       500
 | Original accuracy:            | 100.0% |
 | Accuracy under attack:        | 40.0%  |
 | Attack success rate:          | 60.0%  |
-| Average perturbed word %:     | 21.11% |
+| Average perturbed word %:     | 15.56% |
 | Average num. words per input: | 32.8   |
-| Avg num queries:              | 47.0   |
+| Avg num queries:              | 37.4   |
 +-------------------------------+--------+
