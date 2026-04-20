@@ -63,13 +63,13 @@ Hybrid:
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 32     |
-| Number of failed attacks:     | 18     |
+| Number of successful attacks: | 31     |
+| Number of failed attacks:     | 19     |
 | Number of skipped attacks:    | 0      |
 | Original accuracy:            | 100.0% |
-| Accuracy under attack:        | 36.0%  |
-| Attack success rate:          | 64.0%  |
-| Average perturbed word %:     | 12.97% |
+| Accuracy under attack:        | 38.0%  |
+| Attack success rate:          | 62.0%  |
+| Average perturbed word %:     | 13.03% |
 | Average num. words per input: | 26.76  |
-| Avg num queries:              | 58.0   |
+| Avg num queries:              | 49.36  |
 +-------------------------------+--------+
