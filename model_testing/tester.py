@@ -5,7 +5,7 @@ import pandas as pd
 import argparse
 
 from torch.utils.data import DataLoader
-from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer, DebertaV2ForSequenceClassification
+from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer, DebertaV2ForSequenceClassification, RobertaTokenizerFast
 from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report, confusion_matrix
 from textattack.attack_recipes import TextFoolerJin2019, DeepWordBugGao2018, BAEGarg2019
 from textattack import Attacker, AttackArgs
@@ -25,6 +25,8 @@ from utils.deberta_custom_recipe import DeBERTaAttack
 
 apply_sentence_encoder_patch()
 
+# To run this, 
+# python tester.py --model_name <model_name> --adversarial_attacks <attack_name> (Optional)
 """
     Method to prepare attacks. Default number of samples is set to 10% of test subset. (500 samples)
     Decodes the tokenized input to apply the adversarial attack on the target input.
@@ -92,7 +94,7 @@ def main(args):
 
         print(f"Loading model from {MODEL_PATH}...")
 
-        tokenizer = RobertaTokenizer.from_pretrained(MODEL_PATH)
+        tokenizer = RobertaTokenizerFast.from_pretrained(MODEL_PATH)
         model = RobertaForSequenceClassification.from_pretrained(MODEL_PATH)
     elif "deberta" in args.model_name:
         if args.model_name == "deberta_adversarial_trained":
