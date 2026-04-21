@@ -14,7 +14,7 @@ def main(args):
         tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base", use_fast=False)
     else:
         if args.model_name:
-            tokenizer = AutoTokenizer.from_pretrained(model_name)
+            tokenizer = AutoTokenizer.from_pretrained(args.model_name)
         else:
             print("Please specify a model!")
             return

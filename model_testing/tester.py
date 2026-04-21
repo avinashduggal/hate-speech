@@ -90,7 +90,7 @@ def main(args):
     # Will the load the relevant model and tokenizer based on the model_name. 
     # If not model_name not specficed or doesn't exist, terminate the script.
     if args.model_name == "roberta":
-        MODEL_PATH = "../model_training/final_roberta_model" #Change this to new base roberta model.
+        MODEL_PATH = "../model_training/roberta-base-hs-tuned" #Change this to new base roberta model.
 
         print(f"Loading model from {MODEL_PATH}...")
 
@@ -149,7 +149,7 @@ def main(args):
     if args.adversarial_attacks:
         attack_args = AttackArgs(
             log_to_csv=f'./results/attack_results_{args.model_name}_{args.adversarial_attacks}.csv',
-            num_examples=50,  
+            num_examples=50,
         )
         attack_dataset = prepare_attacks(test_loader, model, tokenizer, DEVICE)
         attacker = Attacker(attack, attack_dataset, attack_args)

@@ -1,32 +1,33 @@
 ==============================
 TEST PERFORMANCE REPORT
 ==============================
-Accuracy: 0.8240
+Accuracy: 0.8480
 
 Classification Report:
               precision    recall  f1-score   support
 
-           0       0.79      0.88      0.83       250
-           1       0.86      0.77      0.81       250
+           0       0.82      0.89      0.85       250
+           1       0.88      0.80      0.84       250
 
-    accuracy                           0.82       500
-   macro avg       0.83      0.82      0.82       500
-weighted avg       0.83      0.82      0.82       500
+    accuracy                           0.85       500
+   macro avg       0.85      0.85      0.85       500
+weighted avg       0.85      0.85      0.85       500
 
 Character:
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 37     |
-| Number of failed attacks:     | 13     |
+| Number of successful attacks: | 34     |
+| Number of failed attacks:     | 16     |
 | Number of skipped attacks:    | 0      |
 | Original accuracy:            | 100.0% |
-| Accuracy under attack:        | 26.0%  |
-| Attack success rate:          | 74.0%  |
-| Average perturbed word %:     | 20.18% |
-| Average num. words per input: | 28.64  |
-| Avg num queries:              | 42.5   |
+| Accuracy under attack:        | 32.0%  |
+| Attack success rate:          | 68.0%  |
+| Average perturbed word %:     | 18.23% |
+| Average num. words per input: | 30.02  |
+| Avg num queries:              | 45.66  |
 +-------------------------------+--------+
+Attack Success Rate: 68.00%
 
 Word:
 +-------------------------------+--------+
