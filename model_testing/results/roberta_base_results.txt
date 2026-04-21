@@ -39,37 +39,40 @@ Word:
 | Original accuracy:            | 100.0% |
 | Accuracy under attack:        | 16.0%  |
 | Attack success rate:          | 84.0%  |
-| Average perturbed word %:     | 16.74% |
-| Average num. words per input: | 28.64  |
-| Avg num queries:              | 128.92 |
+| Average perturbed word %:     | 15.74% |
+| Average num. words per input: | 30.02  |
+| Avg num queries:              | 128.02 |
 +-------------------------------+--------+
+Attack Success Rate: 84.00%
 
 Semantic:
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 12     |
-| Number of failed attacks:     | 38     |
+| Number of successful attacks: | 10     |
+| Number of failed attacks:     | 40     |
 | Number of skipped attacks:    | 0      |
 | Original accuracy:            | 100.0% |
-| Accuracy under attack:        | 76.0%  |
-| Attack success rate:          | 24.0%  |
-| Average perturbed word %:     | 6.0%   |
-| Average num. words per input: | 28.64  |
-| Avg num queries:              | 48.84  |
+| Accuracy under attack:        | 80.0%  |
+| Attack success rate:          | 20.0%  |
+| Average perturbed word %:     | 4.22%  |
+| Average num. words per input: | 30.02  |
+| Avg num queries:              | 49.5   |
 +-------------------------------+--------+
+Attack Success Rate: 20.00%
 
 Hybrid:
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 31     |
-| Number of failed attacks:     | 19     |
+| Number of successful attacks: | 29     |
+| Number of failed attacks:     | 21     |
 | Number of skipped attacks:    | 0      |
 | Original accuracy:            | 100.0% |
-| Accuracy under attack:        | 38.0%  |
-| Attack success rate:          | 62.0%  |
-| Average perturbed word %:     | 14.52% |
-| Average num. words per input: | 28.64  |
-| Avg num queries:              | 52.62  |
+| Accuracy under attack:        | 42.0%  |
+| Attack success rate:          | 58.0%  |
+| Average perturbed word %:     | 12.84% |
+| Average num. words per input: | 30.02  |
+| Avg num queries:              | 53.28  |
 +-------------------------------+--------+
+Attack Success Rate: 58.00%
