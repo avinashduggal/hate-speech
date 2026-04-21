@@ -1,0 +1,8 @@
+.venv/
+.DS_Store
+model_training/roberta_models/adverse_roberta_dynamic_2/
+model_training/roberta_models/base_roberta/
+model_training/deberta-v3-hs/
+model_training/deberta-v3-adversarial/
+**/tfhub_cache/
+**/__pycache__/
