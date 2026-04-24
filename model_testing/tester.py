@@ -90,7 +90,7 @@ def main(args):
     # Will the load the relevant model and tokenizer based on the model_name. 
     # If not model_name not specficed or doesn't exist, terminate the script.
     if args.model_name == "roberta":
-        MODEL_PATH = "../model_training/roberta-base" #Change this to new base roberta model.
+        MODEL_PATH = "../model_training/roberta-base-tuned" #Change this to new base roberta model.
 
         print(f"Loading model from {MODEL_PATH}...")
 
