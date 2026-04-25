@@ -1,21 +1,27 @@
 Train:
+Train Loss: 0.1058
+Train Accuracy: 0.9675
+Train F1: 0.9675
 
               precision    recall  f1-score   support
 
-    non-hate       0.94      0.98      0.96      4500
-        hate       0.98      0.94      0.96      4500
+    non-hate       0.95      0.98      0.97      4500
+        hate       0.98      0.95      0.97      4500
 
-    accuracy                           0.96      9000
-   macro avg       0.96      0.96      0.96      9000
-weighted avg       0.96      0.96      0.96      9000
+    accuracy                           0.97      9000
+   macro avg       0.97      0.97      0.97      9000
+weighted avg       0.97      0.97      0.97      9000
 
 Val:
+Val Loss: 0.4409
+Val Accuracy: 0.876
+Val F1: 0.8759
 
               precision    recall  f1-score   support
 
-    non-hate       0.85      0.88      0.86       250
-        hate       0.88      0.84      0.86       250
+    non-hate       0.86      0.90      0.88       250
+        hate       0.90      0.85      0.87       250
 
-    accuracy                           0.86       500
-   macro avg       0.86      0.86      0.86       500
-weighted avg       0.86      0.86      0.86       500
+    accuracy                           0.88       500
+   macro avg       0.88      0.88      0.88       500
+weighted avg       0.88      0.88      0.88       500

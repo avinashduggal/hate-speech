@@ -12,12 +12,13 @@ from textattack import TrainingArgs
 from textattack import Trainer as TATrainer
 from textattack import Attacker, AttackArgs
 
-from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, classification_report
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix, classification_report, accuracy_score, f1_score
 from textattack.attack_results import SuccessfulAttackResult
 
 import sys
 import os
 
+import torch.nn as nn
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -56,20 +57,32 @@ val_dataset   = TADataset(val_data)
 def compute_metrics(model_wrapper, dataset):
     preds = []
     labels = []
+    total_loss = 0
+
+    loss_function = nn.CrossEntropyLoss()
+
     with torch.no_grad():   
         for text_input, label in dataset:
             output = model_wrapper(text_input['text'])
+
+            label_tensor = torch.tensor([label])
+
+            loss = loss_function(output, label_tensor)
+            total_loss += loss.item()
+
             preds.append(np.argmax(output))
             labels.append(label)
-        
-    return preds, labels
+    
+    avg_loss = total_loss / len(dataset)
+
+    return preds, labels, avg_loss
 
 """
     Prints the Classification Reports and save Confusion Matrices for the specfied subsets.
 """
 def print_classification_report(model_wrapper, dataset, ds_type):
     print(f"Computing metrics for {ds_type} set.")
-    preds, labels = compute_metrics(model_wrapper, dataset)
+    preds, labels, loss = compute_metrics(model_wrapper, dataset)
 
     print(f"Generating Confusion Matrix for {ds_type} set.")
     filename = f"./results/deberta_adv_{ds_type.lower()}_confusion_matrix.png"
@@ -81,6 +94,11 @@ def print_classification_report(model_wrapper, dataset, ds_type):
     disp.figure_.savefig(filename, bbox_inches='tight')
 
     print(f"Loading Classification Report for {ds_type} set.")
+
+    print(f"{ds_type} Loss: {loss:.4f}")
+    print(f"Accuracy: {accuracy_score(labels, preds):.4f}")
+    print(f"F1-Score: {f1_score(labels, preds):.4f}")
+
     print(classification_report(labels, preds, target_names=["non-hate", "hate"]))
     print(f"Finished printing classification report and confusion matrix for {ds_type}!")
 

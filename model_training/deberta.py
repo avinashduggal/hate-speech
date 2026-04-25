@@ -45,11 +45,12 @@ tokenizer = AutoTokenizer.from_pretrained(MODEL_PATH, use_fast=False)
     Computes the Accuracy and F1-Score.
 """
 def compute_metrics(eval_pred):
-    logits, labels = eval_pred
+    logits, labels, losses = eval_pred
     preds = np.argmax(logits, axis=-1)
     return {
         "accuracy": accuracy_score(labels, preds),
         "f1": f1_score(labels, preds, average="macro"),
+        "loss": losses.mean()
     }
 
 """
@@ -60,7 +61,11 @@ def print_classification_report(dataset, ds_type):
     preds = np.argmax(predictions.predictions, axis=-1)
     labels = predictions.label_ids
 
-    filename = f"DeBERTa_{ds_type.lower()}_confusion_matrix.png"
+    print(f"Prediction Metrics table: {predictions.metrics}")
+
+    loss = predictions.metrics.get("test_loss")
+
+    filename = f"./results/DeBERTa_{ds_type.lower()}_confusion_matrix.png"
     cm = confusion_matrix(labels, preds)
 
     disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels = ["hate", "non-hate"])
@@ -68,14 +73,16 @@ def print_classification_report(dataset, ds_type):
     disp.ax_.set_title(f"DeBERTa {ds_type} - Confusion Matrix")
     disp.figure_.savefig(filename, bbox_inches='tight')
 
+    print(f"{ds_type} Loss: {loss:.4f}")
+
     print(classification_report(labels, preds, target_names=["non-hate", "hate"]))
 
 # Set to train for 3 epochs.
 training_args = TrainingArguments(
     output_dir="./deberta-v3-hs",
     num_train_epochs=3,
-    per_device_train_batch_size=32,
-    per_device_eval_batch_size=32,
+    per_device_train_batch_size=16,
+    per_device_eval_batch_size=8,
     learning_rate=2e-5,  
     weight_decay=0.01,
     warmup_ratio=0.1,
@@ -85,9 +92,11 @@ training_args = TrainingArguments(
     load_best_model_at_end=True,
     metric_for_best_model="f1",  
     greater_is_better=True,
-    fp16=torch.mps.is_available(),
+    fp16=False,
     dataloader_pin_memory=False,    
-    logging_steps=200,
+    logging_steps=500,
+    eval_steps=50,
+    include_for_metrics=["loss"],
     report_to="none"
 )
 

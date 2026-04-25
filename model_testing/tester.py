@@ -6,7 +6,7 @@ import argparse
 
 from torch.utils.data import DataLoader
 from transformers import RobertaTokenizer, RobertaForSequenceClassification, AutoTokenizer, DebertaV2ForSequenceClassification, RobertaTokenizerFast
-from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import ConfusionMatrixDisplay, accuracy_score, classification_report, confusion_matrix, f1_score
 from textattack.attack_recipes import TextFoolerJin2019, DeepWordBugGao2018, BAEGarg2019
 from textattack import Attacker, AttackArgs
 
@@ -169,6 +169,7 @@ def main(args):
     # Evaluation Loop
     all_preds = []
     all_labels = []
+    total_loss = 0
 
     print("Running evaluation...")
     with torch.no_grad():
@@ -177,9 +178,11 @@ def main(args):
             attention_mask = batch['attention_mask'].to(DEVICE)
             targets = batch['labels'].to(DEVICE)
             
-            outputs = model(input_ids, attention_mask=attention_mask)
+            outputs = model(input_ids, attention_mask=attention_mask, labels=targets)
+            loss = outputs.loss
             preds = torch.argmax(outputs.logits, dim=1)
             
+            total_loss += loss.item()
             all_preds.extend(preds.cpu().numpy())
             all_labels.extend(targets.cpu().numpy())
 
@@ -187,7 +190,9 @@ def main(args):
     print("\n" + "="*30)
     print("TEST PERFORMANCE REPORT")
     print("="*30)
+    print(f"Loss: {total_loss / len(test_loader):.4f}")
     print(f"Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
+    print(f"F1-Score: {f1_score(all_labels, all_preds):.4f}")
     print("\nClassification Report:")
     print(classification_report(all_labels, all_preds))
 

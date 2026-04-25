@@ -1,4 +1,7 @@
 Train:
+Train Loss: 0.0211
+Accuracy: 0.9943
+F1-Score: 0.9943
               precision    recall  f1-score   support
 
     non-hate       0.99      1.00      0.99      4500
@@ -17,16 +20,19 @@ weighted avg       0.99      0.99      0.99      9000
 | Original accuracy:            | 100.0% |
 | Accuracy under attack:        | 50.0%  |
 | Attack success rate:          | 50.0%  |
-| Average perturbed word %:     | 20.49% |
+| Average perturbed word %:     | 12.88% |
 | Average num. words per input: | 29.6   |
-| Avg num queries:              | 77.3   |
+| Avg num queries:              | 60.7   |
 +-------------------------------+--------+
 
 Val:
+Val Loss: 0.5070
+Accuracy: 0.8740
+F1-Score: 0.8679
               precision    recall  f1-score   support
 
-    non-hate       0.85      0.91      0.88       250
-        hate       0.90      0.84      0.87       250
+    non-hate       0.84      0.92      0.88       250
+        hate       0.91      0.83      0.87       250
 
     accuracy                           0.87       500
    macro avg       0.88      0.87      0.87       500
@@ -35,13 +41,13 @@ weighted avg       0.88      0.87      0.87       500
 +-------------------------------+--------+
 | Attack Results                |        |
 +-------------------------------+--------+
-| Number of successful attacks: | 3      |
+| Number of successful attacks: | 1      |
 | Number of failed attacks:     | 2      |
-| Number of skipped attacks:    | 0      |
-| Original accuracy:            | 100.0% |
+| Number of skipped attacks:    | 2      |
+| Original accuracy:            | 60.0%  |
 | Accuracy under attack:        | 40.0%  |
-| Attack success rate:          | 60.0%  |
-| Average perturbed word %:     | 15.56% |
+| Attack success rate:          | 33.33% |
+| Average perturbed word %:     | 16.67% |
 | Average num. words per input: | 32.8   |
-| Avg num queries:              | 37.4   |
+| Avg num queries:              | 50.67  |
 +-------------------------------+--------+
